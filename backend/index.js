@@ -9,7 +9,7 @@ import cors from "cors";
 import connectToMongoDB from "./db/connecttoMongoDB.js";
                                     // express server running port andimport dependencies
                                     //first importing express require parameter is the package name                                               
-
+const __dirname=path.resolve();
 const PORT= process.env.PORT || 5000                                                   //using this express we create our app instance
 const app=express();
                                              //initialize the mangoose package
@@ -30,10 +30,7 @@ app.use(cors());                                   //using this our reactjs proj
 
 
 //Api creation
-app.get("/",(req,res)=>{
-    res.send("Express App is running")
 
-})
 
 //Image Storage Engine
 const storage=multer.diskStorage({
@@ -307,6 +304,10 @@ app.post('/ecomm/getcart',fetchUser,async(req,res)=>{
     console.log("GetCart");
     let userData=await Users.findOne({_id:req.user.id});
     res.json(userData.cartData);
+})
+app.use(express.static(path.join(__dirname,"frontend/dist")))
+app.get("*",(req,res)=>{
+    res.sendFile(path.join(__dirname,"frontend","dist","index.html"))
 })
 
 app.listen(PORT,(error)=>{
