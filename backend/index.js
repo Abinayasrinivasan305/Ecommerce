@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
 import cors from "cors";
+import bodyParser from "body-parser";
 import connectToMongoDB from "./db/connecttoMongoDB.js";
                                     // express server running port andimport dependencies
                                     //first importing express require parameter is the package name                                               
@@ -18,7 +19,8 @@ dotenv.config().parsed;                  //intialize the json web token
                           //include the path from the express server ,using this path module we can access our backend directory in our express app
                       //initialize the cors package
 
-
+// app.use(bodyParser.json({limit: '50mb'}));
+// app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json());   //with the help of express.json whatever the req get from respone that is automaticallay parsed through the json
 app.use(cors());                                   //using this our reactjs project connect to express app on port 4000
 
@@ -30,9 +32,6 @@ app.use(cors());                                   //using this our reactjs proj
 
 
 //Api creation
-
-
-//Image Storage Engine
 const storage=multer.diskStorage({
     destination:'./upload/images',
     filename:(req,file,cb)=>{
@@ -42,15 +41,6 @@ const storage=multer.diskStorage({
 
 const upload=multer({storage:storage})
 
-//creating uploading endpoint for images
-app.use('/images',express.static('upload/images'))
-
-app.post("/upload",upload.single('product'),(req,res)=>{
-    res.json({
-        success:1,
-        image_url:`http://localhost:${PORT}/images/${req.file.filename}`
-    })
-})
 
 //Schema for Creating Products
 
@@ -88,6 +78,26 @@ const Product=mongoose.model("Product",{
         default:true,     
     },
 })
+// app.use('/images',express.static('upload/images'))
+app.post("/upload",(req,res)=>{
+    console.log(req.body)
+    const {data}= req.body;
+    if (!req.body || !req.body.image) {
+        return res.status(400).json({ error: "Image data not provided" });
+    }
+    const imageData = req.body.image;
+    try {
+        // Assuming Product is defined elsewhere
+        Product.create({ image: imageData });
+        res.status(200).json({ status: "ok",
+    image :  imageData});
+    } catch (error) {
+        res.status(500).json({ status: "error", error: error.message });
+    }
+})
+
+   
+
 
 app.post('/ecomm/addproduct',async (req,res)=>{
     let products = await Product.find({});
